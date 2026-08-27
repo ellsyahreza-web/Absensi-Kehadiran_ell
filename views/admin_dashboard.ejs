@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin - Sistem Kehadiran</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Sistem Kehadiran (Admin)</a>
+            <div class="d-flex">
+                <span class="navbar-text text-white me-3">Halo, <%= user.name %>!</span>
+                <a href="/logout" class="btn btn-outline-light btn-sm">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <% if (error) { %>
+            <div class="alert alert-danger"><%= error %></div>
+        <% } %>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body text-center">
+                <h5 class="card-title">QR Sesi Mata Pelajaran</h5>
+                <% if (subjects.length > 0) { %>
+                    <form action="/admin" method="GET" class="mb-3">
+                        <select name="subjectId" class="form-select" onchange="this.form.submit()">
+                            <% subjects.forEach(function(subject) { %>
+                                <option value="<%= subject.id %>" <%= selectedSubject && selectedSubject.id === subject.id ? 'selected' : '' %>><%= subject.code ? subject.code + ' - ' : '' %><%= subject.name %></option>
+                            <% }) %>
+                        </select>
+                    </form>
+                    <p class="text-muted">Tampilkan QR <strong><%= selectedSubject.name %></strong> agar mahasiswa dapat memindainya.</p>
+                    <img src="<%= qrImage %>" alt="QR <%= selectedSubject.name %>" class="img-fluid" style="max-width: 220px;">
+                <% } else { %>
+                    <p class="text-muted mb-0">Tambahkan mata pelajaran terlebih dahulu untuk membuat QR sesi.</p>
+                <% } %>
+            </div>
+        </div>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Tambah Mata Pelajaran</h5>
+                <form action="/admin/subjects" method="POST" class="row g-2">
+                    <div class="col-md-7"><input type="text" name="name" class="form-control" placeholder="Nama mata pelajaran" required></div>
+                    <div class="col-md-3"><input type="text" name="code" class="form-control" placeholder="Kode (opsional)"></div>
+                    <div class="col-md-2"><button type="submit" class="btn btn-success w-100">Tambah</button></div>
+                </form>
+            </div>
+        </div>
+        <div class="row g-3 mb-4">
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="text-muted">Total mahasiswa</div><div class="display-6 fw-semibold"><%= stats.totalStudents %></div></div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="text-muted">Hadir hari ini</div><div class="display-6 fw-semibold text-success"><%= stats.presentToday %></div></div></div>
+            </div>
+            <div class="col-md-4">
+                <div class="card shadow-sm border-0 h-100"><div class="card-body"><div class="text-muted">Belum clock-out</div><div class="display-6 fw-semibold text-warning"><%= stats.activeToday %></div></div></div>
+            </div>
+        </div>
+        <ul class="nav nav-tabs" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="laporan-tab" data-bs-toggle="tab" data-bs-target="#laporan" type="button" role="tab">Laporan Kehadiran</button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="pegawai-tab" data-bs-toggle="tab" data-bs-target="#pegawai" type="button" role="tab">Manajemen Pegawai</button>
+            </li>
+        </ul>
+
+        <div class="tab-content mt-3" id="myTabContent">
+            <!-- Laporan Tab -->
+            <div class="tab-pane fade show active" id="laporan" role="tabpanel">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Seluruh Riwayat Kehadiran</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Nama Mahasiswa</th>
+                                        <th>Mata Pelajaran</th>
+                                        <th>Tanggal</th>
+                                        <th>Jam Masuk</th>
+                                        <th>Jam Pulang</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (allAttendance.length > 0) { %>
+                                        <% allAttendance.forEach(function(record) { %>
+                                            <tr>
+                                                <td><%= record.name %></td>
+                                                <td><%= record.subject_name || '-' %></td>
+                                                <td><%= record.date %></td>
+                                                <td><%= record.clock_in || '-' %></td>
+                                                <td><%= record.clock_out || '-' %></td>
+                                                <td><span class="badge bg-success"><%= record.status %></span></td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="6" class="text-center">Belum ada data kehadiran.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pegawai Tab -->
+            <div class="tab-pane fade" id="pegawai" role="tabpanel">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title mb-3">Daftar Mahasiswa</h5>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Nama</th>
+                                        <th>Username</th>
+                                        <th>Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (employees.length > 0) { %>
+                                        <% employees.forEach(function(emp) { %>
+                                            <tr>
+                                                <td><%= emp.id %></td>
+                                                <td><%= emp.name %></td>
+                                                <td><%= emp.username %></td>
+                                                <td>
+                                                    <form action="/admin/delete-employee" method="POST" onsubmit="return confirm('Yakin ingin menghapus pegawai ini beserta data absennya?');">
+                                                        <input type="hidden" name="id" value="<%= emp.id %>">
+                                                        <button type="submit" class="btn btn-danger btn-sm">Hapus</button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="4" class="text-center">Belum ada mahasiswa terdaftar.</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
