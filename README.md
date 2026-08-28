@@ -8,7 +8,7 @@ Sebuah sistem pencatatan kehadiran digital yang dirancang untuk mempermudah pela
 * **Antarmuka Intuitif:** Desain UI yang mudah dipahami oleh pengguna untuk mempercepat proses absensi.
 
 ## 🛠️ Teknologi yang Digunakan
-* **Frontend:** Flutter
+* **Frontend:** React
 * **Backend:** Java
 * **Database:** DynamoDB
 * **Desain UI:** Figma
